@@ -13,8 +13,8 @@ const app = express();
 
 // ldap client
 const serverUrl = `${process.env.LDAP_SERVER_BASE_URL}:${process.env.LDAP_SERVER_PORT}`;
-const username = 'uid=admin,ou=system';
-const password = process.env.LDAP_PW;
+const readerDN = 'uid=admin,ou=system';
+const readerPassword = process.env.LDAP_PW;
 const ldapOptions = {
   url: serverUrl,
   connectTimeout: process.env.LDAP_SERVER_CONNECTION_TIMEOUT,
@@ -23,7 +23,7 @@ const ldapOptions = {
 
 const client = ldap.createClient(ldapOptions);
 
-client.bind(username, password, (error) => {
+client.bind(readerDN, readerPassword, (error) => {
   if (error) {
     console.error('LDAP connection failed:', error);
   } else {
@@ -31,14 +31,12 @@ client.bind(username, password, (error) => {
   }
 });
 
-// handle connection error
 client.on('connectError', (err) => {
   console.log('[LDAP] Error occured: ', err)
   client.unbind(() => {
     console.log("Closed LDAP server connection.");
   })
 })
-
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -51,7 +49,12 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/end', () => {
+  client.unbind(() => {
+    console.log("Closed LDAP server connection.");
+  })
+})
+app.use('/users', usersRouter(client));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -70,13 +73,13 @@ app.use(function(err, req, res, next) {
 });
 
 
-function cleanup () {
+const cleanup = () => {
   client.unbind(() => {
     console.log("Closed LDAP server connection.");
     process.exit();
   })
 
-  setTimeout( function () {
+  setTimeout(() => {
     console.error("Could not close connections in time, forcing shut down");
     process.exit(1);
   }, 30*1000);
