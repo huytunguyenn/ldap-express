@@ -8,15 +8,19 @@ const ldap = require("ldapjs");
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 
-
 const app = express();
 
+/**
+ * NOTE: use same WiFi
+ * Use Node.js 15.0
+ */
+
 // ldap client
-const serverUrl = `${process.env.LDAP_SERVER_BASE_URL}:${process.env.LDAP_SERVER_PORT}`;
-const readerDN = 'uid=admin,ou=system';
+// const readerDN = 'uid=admin,ou=system';
+const readerDN = process.env.LDAP_READER_CN;
 const readerPassword = process.env.LDAP_PW;
 const ldapOptions = {
-  url: serverUrl,
+  url: `${process.env.LDAP_SERVER_BASE_URL}:${process.env.LDAP_SERVER_PORT}`,
   connectTimeout: process.env.LDAP_SERVER_CONNECTION_TIMEOUT,
   reconnect: true
 };
@@ -27,7 +31,7 @@ client.bind(readerDN, readerPassword, (error) => {
   if (error) {
     console.error('LDAP connection failed:', error);
   } else {
-    console.log(`LDAP server connected. URL: ${serverUrl}`);
+    console.log(`LDAP server connected. URL: ${ldapOptions.url}`);
   }
 });
 
@@ -40,7 +44,7 @@ client.on('connectError', (err) => {
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+app.set('view engine', 'hbs');
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -49,12 +53,8 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/end', () => {
-  client.unbind(() => {
-    console.log("Closed LDAP server connection.");
-  })
-})
 app.use('/users', usersRouter(client));
+app.use('/end', () => client.unbind(() => console.log("Closed LDAP server connection.")));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
