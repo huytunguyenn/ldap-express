@@ -6,4 +6,43 @@ env:
 extends: standard
 parserOptions:
   ecmaVersion: latest
-rules: {}
+rules:
+  eqeqeq: 0
+  no-var: 2
+  no-console: 2
+  no-alert: 2
+  no-debugger: 2
+  semi: [2, "never"]
+  space-before-function-paren: [2, {"anonymous": "always", "named": "never"}]
+  yoda: 0
+  arrow-parens: [2, "always"]
+  arrow-spacing: 2
+  brace-style: [2, "stroustrup"]
+  padded-blocks: 0
+  newline-after-var: 0
+  spaced-comment: 0
+  max-len: [2, 100, 4, {"ignoreUrls": true}]
+  array-bracket-spacing: [2, "never"]
+  computed-property-spacing: [2, "never"]
+  no-trailing-spaces: [2, {"skipBlankLines": true}]
+  generator-star-spacing: [2, {"before": false, "after": true}]
+  indent: "off"
+  dot-notation: 0
+
+  new-cap: 2
+  object-curly-spacing: ["error", "never"]
+  object-shorthand: 2
+  no-await-in-loop: 0
+  camelcase: 0
+
+  # Import
+  import/no-unresolved: [2, {commonjs: true, amd: true}]
+  import/named: 0
+  import/namespace: 2
+  import/default: 2
+  import/export: 2
+  import/no-named-as-default: 2
+  import/no-commonjs: 0
+  import/no-amd: 2
+  import/imports-first: 2
+  import/no-duplicates: 2

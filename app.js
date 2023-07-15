@@ -18,25 +18,27 @@ const app = express();
 // ldap client
 // const readerDN = 'uid=admin,ou=system';
 const readerDN = process.env.LDAP_READER_CN;
-const readerPassword = process.env.LDAP_PW;
+const readerPassword = process.env.LDAP_READER_PW;
 const ldapOptions = {
   url: `${process.env.LDAP_SERVER_BASE_URL}:${process.env.LDAP_SERVER_PORT}`,
   connectTimeout: process.env.LDAP_SERVER_CONNECTION_TIMEOUT,
   reconnect: true
 };
+console.log(`ldap options: ${JSON.stringify(ldapOptions)}`)
+console.log(`username: ${readerDN}, password: ${readerPassword}`)
 
 const client = ldap.createClient(ldapOptions);
 
 client.bind(readerDN, readerPassword, (error) => {
   if (error) {
-    console.error('LDAP connection failed:', error);
+    console.error('Error while binding: ', error);
   } else {
     console.log(`LDAP server connected. URL: ${ldapOptions.url}`);
   }
 });
 
 client.on('connectError', (err) => {
-  console.log('[LDAP] Error occured: ', err)
+  console.log('Connection error: ', err)
   client.unbind(() => {
     console.log("Closed LDAP server connection.");
   })
@@ -44,7 +46,7 @@ client.on('connectError', (err) => {
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'hbs');
+app.set('view engine', 'hbs')
 
 app.use(logger('dev'));
 app.use(express.json());
