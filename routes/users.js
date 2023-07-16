@@ -17,11 +17,24 @@ const userRouter = (client) => {
       }
 
       res.on('searchRequest', (searchRequest) => {
-        console.log('Search request ID: ', searchRequest.messageId);
+        // node15
+        // console.log('Search request ID: ', searchRequest.messageId);
+
+        // 2.3.3
+        console.log('> Search request ID: ', searchRequest.messageID);
       });
       res.on('searchEntry', (entry) => {
-        const attrs = entry.pojo.attributes;
-        console.log(attrs)
+        // node15
+        // console.log('entry: ' + JSON.stringify(entry.pojo));
+        //const attrs = entry.pojo.attributes; // node 15
+
+        // 2.3.3
+        // https://stackoverflow.com/questions/9781218/how-to-change-node-jss-console-font-color
+        console.log('\x1b[36m%s\x1b[0m', '> Message ID:', entry.messageID)
+        console.log('\x1b[33m%s\x1b[0m', '> Object Name', entry.objectName)
+        entry.attributes.forEach(({type, _vals}) => {
+          console.log('\x1b[35m%s\x1b[0m', '> Attribute: ',`type: ${type}. vals: ${_vals}`)
+        })
       });
       res.on('searchReference', (referral) => {
         console.log('referral: ' + referral.uris.join());
